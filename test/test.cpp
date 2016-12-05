@@ -17,7 +17,7 @@ void c::n() {}
 // CHECK-NOT: c::h
 template <class T> T c::h() { return T(); }
 
-// CHECK-NOT: c::i
+// CHECK-NOT: c::g
 template <class T> __attribute__((__visibility__("hidden"))) T c::g() {
   return T();
 }
@@ -27,7 +27,7 @@ template <class T> __attribute__((__visibility__("default"))) T c::d() {
   return T();
 }
 
-// CHECK-NOT: t::i
+// CHECK-NOT: c::i
 template <class T> inline T c::i() { return T(); }
 
 class __attribute__((__visibility__("hidden"))) hc {
