@@ -1,0 +1,6 @@
+*.dSYM
+*.o
+bad-visibility-finder
+libcxx_header_includes.cpp
+system_includes.rsp
+test/Output
