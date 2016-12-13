@@ -29,7 +29,8 @@ public:
       return true;
     }
 
-    if (Decl->getExplicitVisibility(NamedDecl::VisibilityForValue).hasValue()) {
+    if (Decl->getExplicitVisibility(NamedDecl::VisibilityForValue)
+            .getValueOr(DefaultVisibility) == HiddenVisibility) {
       return true;
     }
 

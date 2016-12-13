@@ -5,6 +5,7 @@ class __attribute__((__visibility__("default"))) c {
   template <class T> __attribute__((__visibility__("hidden"))) T h();
   template <class T> T g();
   template <class T> __attribute__((__visibility__("default"))) T d();
+  template <class T> T p();
   template <class T> T i();
 };
 
@@ -22,8 +23,13 @@ template <class T> __attribute__((__visibility__("hidden"))) T c::g() {
   return T();
 }
 
-// CHECK-NOT: c::d
+// CHECK: c::d
 template <class T> __attribute__((__visibility__("default"))) T c::d() {
+  return T();
+}
+
+// CHECK: c::p
+template <class T> __attribute__((__visibility__("protected"))) T c::p() {
   return T();
 }
 
