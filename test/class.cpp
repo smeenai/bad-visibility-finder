@@ -1,4 +1,11 @@
 // RUN: %bad-visibility-finder %s -- | %FileCheck %s
+
+#if defined(__ELF__)
+#define NON_HIDDEN_VISIBILITY __attribute__((__visibility__("protected")))
+#else
+#define NON_HIDDEN_VISIBILITY __attribute__((__visibility__("default")))
+#endif
+
 class __attribute__((__visibility__("default"))) c {
   template <class T> T m();
   void n();
@@ -29,7 +36,7 @@ template <class T> __attribute__((__visibility__("default"))) T c::d() {
 }
 
 // CHECK: c::p
-template <class T> __attribute__((__visibility__("protected"))) T c::p() {
+template <class T> NON_HIDDEN_VISIBILITY T c::p() {
   return T();
 }
 
