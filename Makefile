@@ -38,9 +38,11 @@ CXXFLAGS := $(LLVM_CXXFLAGS) -fno-strict-aliasing # GCC complains about strict a
 LDFLAGS := $(LLVM_LDFLAGS)
 LDLIBS := $(CLANG_LIBS_START) $(CLANG_LIBS) $(CLANG_LIBS_END) $(LLVM_LIBS) $(LLVM_SYSTEM_LIBS)
 
+.PHONY: all
 all: run-bad-visibility-finder
 
 # I can't figure out how to get response files to work :(
+.PHONY: run-bad-visibility-finder
 run-bad-visibility-finder: bad-visibility-finder libcxx_header_includes.cpp system_includes.rsp
 	./$< libcxx_header_includes.cpp -- -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)
 
@@ -62,8 +64,10 @@ system_includes.rsp:
 	    sed -Ene '/framework directory/!s/^ *(.*)/-isystem \1/p' | \
 	    paste -sd ' ' - > system_includes.rsp
 
+.PHONY: check
 check: bad-visibility-finder
 	$(LLVM_BUILD)/bin/llvm-lit --param filecheck_path=$(LLVM_BUILD)/bin/FileCheck -sv test
 
+.PHONY: clean
 clean:
 	rm -rf *.o *.dSYM bad-visibility-finder libcxx_header_includes.cpp system_includes.rsp test/Output
