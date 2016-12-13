@@ -17,28 +17,23 @@ public:
   explicit BadVisibilityFinderVisitor(ASTContext &Context) : Context(Context) {}
 
   bool VisitCXXMethodDecl(CXXMethodDecl *Decl) {
-    if (!Decl->isThisDeclarationADefinition()) {
+    if (!Decl->isThisDeclarationADefinition())
       return true;
-    }
 
-    if (Decl->getTemplatedKind() == FunctionDecl::TK_NonTemplate) {
+    if (Decl->getTemplatedKind() == FunctionDecl::TK_NonTemplate)
       return true;
-    }
 
-    if (Decl->isInlineSpecified()) {
+    if (Decl->isInlineSpecified())
       return true;
-    }
 
     if (Decl->getExplicitVisibility(NamedDecl::VisibilityForValue)
-            .getValueOr(DefaultVisibility) == HiddenVisibility) {
+            .getValueOr(DefaultVisibility) == HiddenVisibility)
       return true;
-    }
 
     if (Decl->getParent()
             ->getExplicitVisibility(NamedDecl::VisibilityForValue)
-            .getValueOr(HiddenVisibility) != DefaultVisibility) {
+            .getValueOr(HiddenVisibility) != DefaultVisibility)
       return true;
-    }
 
     FullSourceLoc FullLoc = Context.getFullLoc(Decl->getLocStart());
     assert(FullLoc.isValid());
