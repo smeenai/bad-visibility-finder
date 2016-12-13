@@ -7,7 +7,9 @@ class declaration to be marked inline and/or hidden visibility, so that
 other libraries using the headers and wishing to control their
 visibility (using `-fvisibility=hidden -fvisibility-inlines-hidden`) do
 not export implicit instantiations of those template member functions.
-The tool finds member functions which are not marked appropriately.
+The same applies to template classes with explicit instantiation
+declarations marked with default visibility.  The tool finds member
+functions which are not marked appropriately.
 
 This tool was mostly a personal exercise to learn clang tooling
 infrastructure; I'm uploading it in case anyone else wants to double

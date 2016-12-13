@@ -1,3 +1,6 @@
+#include <unordered_map>
+#include <vector>
+
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -30,22 +33,74 @@ public:
             .getValueOr(DefaultVisibility) == HiddenVisibility)
       return true;
 
-    if (Decl->getParent()
-            ->getExplicitVisibility(NamedDecl::VisibilityForValue)
-            .getValueOr(HiddenVisibility) != DefaultVisibility)
+    CXXRecordDecl *Class = Decl->getParent()->getCanonicalDecl();
+    if (Class->getExplicitVisibility(NamedDecl::VisibilityForValue)
+            .getValueOr(HiddenVisibility) != HiddenVisibility) {
+      printBadMethod(Decl);
+      return true;
+    }
+
+    ClassTemplateDecl *Template = Class->getDescribedClassTemplate();
+    if (Template == nullptr)
       return true;
 
-    FullSourceLoc FullLoc = Context.getFullLoc(Decl->getLocStart());
-    assert(FullLoc.isValid());
-    llvm::outs() << Context.getSourceManager().getFilename(FullLoc) << ":"
-                 << FullLoc.getSpellingLineNumber() << " ";
-    Decl->printQualifiedName(llvm::outs());
-    llvm::outs() << "\n";
+    auto Specialization = DefaultVisibilityInstantiations.find(Class);
+    if (Specialization == DefaultVisibilityInstantiations.end()) {
+      BadVisibilityMethods[Class].push_back(Decl);
+      return true;
+    }
+
+    printBadMethod(Decl, Specialization->second);
+    return true;
+  }
+
+  bool
+  VisitClassTemplateSpecializationDecl(ClassTemplateSpecializationDecl *Decl) {
+    // TODO: handle other types of specializations
+    if (Decl->getTemplateSpecializationKind() !=
+        TSK_ExplicitInstantiationDeclaration)
+      return true;
+
+    if (Decl->getExplicitVisibility(NamedDecl::VisibilityForValue)
+            .getValueOr(HiddenVisibility) == HiddenVisibility)
+      return true;
+
+    CXXRecordDecl *Class =
+        Decl->getSpecializedTemplate()->getTemplatedDecl()->getCanonicalDecl();
+    if (DefaultVisibilityInstantiations.count(Class) == 1)
+      return true;
+
+    DefaultVisibilityInstantiations.emplace(Class, Decl);
+    for (auto *Method : BadVisibilityMethods[Class])
+      printBadMethod(Method, Decl);
     return true;
   }
 
 private:
   ASTContext &Context;
+  std::unordered_map<CXXRecordDecl *, ClassTemplateSpecializationDecl *>
+      DefaultVisibilityInstantiations;
+  std::unordered_map<CXXRecordDecl *, std::vector<CXXMethodDecl *>>
+      BadVisibilityMethods;
+
+  void printBadMethod(
+      const CXXMethodDecl *Decl,
+      const ClassTemplateSpecializationDecl *Specialization = nullptr) {
+    llvm::outs() << getSourceLoc(Decl) << " ";
+    Decl->printQualifiedName(llvm::outs());
+    if (Specialization != nullptr)
+      llvm::outs() << " (from specialization at "
+                   << getSourceLoc(Specialization) << ")";
+    llvm::outs() << "\n";
+  }
+
+  std::string getSourceLoc(const Decl *Decl) {
+    FullSourceLoc FullLoc =
+        Context.getFullLoc(Decl->getLocStart()).getExpansionLoc();
+    return (Context.getSourceManager().getFilename(FullLoc) + ":" +
+            llvm::Twine(FullLoc.getExpansionLineNumber()))
+        .str();
+  }
 };
 
 class BadVisibilityFinderConsumer : public ASTConsumer {
