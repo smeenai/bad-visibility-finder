@@ -86,8 +86,8 @@ private:
   void printBadMethod(
       const CXXMethodDecl *Decl,
       const ClassTemplateSpecializationDecl *Specialization = nullptr) {
-    llvm::outs() << getSourceLoc(Decl) << " ";
     Decl->printQualifiedName(llvm::outs());
+    llvm::outs() << " at " << getSourceLoc(Decl);
     if (Specialization != nullptr)
       llvm::outs() << " (from specialization at "
                    << getSourceLoc(Specialization) << ")";
