@@ -1,4 +1,5 @@
 // RUN: %bad-visibility-finder %s -- | %FileCheck %s
+template <class T> class c;
 template <class T> class c {
   template <class U> U f();
   template <class U> __attribute__((__visibility__("hidden"))) U g();

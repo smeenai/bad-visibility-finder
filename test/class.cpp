@@ -6,6 +6,7 @@
 #define NON_HIDDEN_VISIBILITY __attribute__((__visibility__("default")))
 #endif
 
+class c;
 class __attribute__((__visibility__("default"))) c {
   template <class T> T m();
   void n();
@@ -56,3 +57,11 @@ class __attribute__((__type_visibility__("default"))) tdc {
 
 // CHECK-NOT: tdc::m
 template <class T> T tdc::m() { return T(); }
+
+class NON_HIDDEN_VISIBILITY pc;
+class pc {
+  template <class T> T m();
+};
+
+// CHECK: pc::m
+template <class T> T pc::m() { return T(); }
