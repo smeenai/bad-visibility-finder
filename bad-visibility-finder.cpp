@@ -88,6 +88,8 @@ private:
       const ClassTemplateSpecializationDecl *Specialization = nullptr) {
     Decl->printQualifiedName(llvm::outs());
     llvm::outs() << " at " << getSourceLoc(Decl);
+    llvm::outs() << " (declaration at "
+                 << getSourceLoc(Decl->getCanonicalDecl()) << ")";
     if (Specialization != nullptr)
       llvm::outs() << " (from specialization at "
                    << getSourceLoc(Specialization) << ")";

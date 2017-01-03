@@ -17,7 +17,7 @@ class __attribute__((__visibility__("default"))) c {
   template <class T> T i();
 };
 
-// CHECK: c::m at {{.*}}class.cpp:[[@LINE+1]]
+// CHECK: c::m at [[PATH:.*]]class.cpp:[[@LINE+1]] (declaration at [[PATH]]class.cpp:11)
 template <class T> T c::m() { return T(); }
 
 // CHECK-NOT: c::n
