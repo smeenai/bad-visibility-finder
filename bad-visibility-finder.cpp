@@ -26,7 +26,7 @@ public:
     if (Decl->getTemplatedKind() == FunctionDecl::TK_NonTemplate)
       return true;
 
-    if (Decl->isInlineSpecified())
+    if (Decl->isInlined())
       return true;
 
     if (Decl->getExplicitVisibility(NamedDecl::VisibilityForValue)

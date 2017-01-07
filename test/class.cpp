@@ -15,6 +15,7 @@ class __attribute__((__visibility__("default"))) c {
   template <class T> __attribute__((__visibility__("default"))) T d();
   template <class T> T p();
   template <class T> T i();
+  template <class T> inline T j();
 };
 
 // CHECK: c::m at [[PATH:.*]]class.cpp:[[@LINE+1]] (declaration at [[PATH]]class.cpp:11)
@@ -43,6 +44,9 @@ template <class T> NON_HIDDEN_VISIBILITY T c::p() {
 
 // CHECK-NOT: c::i
 template <class T> inline T c::i() { return T(); }
+
+// CHECK-NOT: c::j
+template <class T> T c::j() { return T(); }
 
 class __attribute__((__visibility__("hidden"))) hc {
   template <class T> T m();
