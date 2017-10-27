@@ -1,6 +1,6 @@
 # Set these appropriately
-LLVM_SRC := $$HOME/llvm/llvm
-LLVM_BUILD := $$HOME/llvm/build/Release
+LLVM_SRC := $$HOME/llvm
+LLVM_BUILD := $$HOME/llvm/build/llvm/Release
 LIBCXX_SRC := $(LLVM_SRC)/projects/libcxx
 
 LLVM_CONFIG := $(LLVM_BUILD)/bin/llvm-config
@@ -43,8 +43,15 @@ all: run-bad-visibility-finder
 
 # I can't figure out how to get response files to work :(
 .PHONY: run-bad-visibility-finder
+run-bad-visibility-finder: SHELL := /bin/bash
 run-bad-visibility-finder: bad-visibility-finder libcxx_header_includes.cpp system_includes.rsp
-	./$< libcxx_header_includes.cpp -- -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)
+	cat \
+	  <(./$< libcxx_header_includes.cpp -- -std=c++98 -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)) \
+	  <(./$< libcxx_header_includes.cpp -- -std=c++03 -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)) \
+	  <(./$< libcxx_header_includes.cpp -- -std=c++11 -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)) \
+	  <(./$< libcxx_header_includes.cpp -- -std=c++14 -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)) \
+	  <(./$< libcxx_header_includes.cpp -- -std=c++1z -I$(LIBCXX_INCLUDE_DIR) $(shell cat system_includes.rsp)) |\
+	sort -u
 
 bad-visibility-finder: bad-visibility-finder.o
 	$(CXX) $(LDFLAGS) -o $@ $< $(LDLIBS)
@@ -53,9 +60,10 @@ bad-visibility-finder.o: bad-visibility-finder.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 libcxx_header_includes.cpp:
-	find $(LIBCXX_INCLUDE_DIR) -maxdepth 1 -type f \
-	    -not -name '*.*' -not -name '__*' -exec basename {} \; | \
-	    sed -Ee 's/(.*)/#include <\1>/' > $@
+	#find $(LIBCXX_INCLUDE_DIR) $(LIBCXX_INCLUDE_DIR)/experimental
+	find $(LIBCXX_INCLUDE_DIR) \
+	    -maxdepth 1 -type f -not -name '*.*' -not -name '__*' |\
+	    sed -Ee 's/.*/#include "&"/' > $@
 
 # Super hacky
 system_includes.rsp:
